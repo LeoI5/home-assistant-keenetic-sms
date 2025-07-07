@@ -3,8 +3,8 @@
   "domain": "keenetic_sms",
   "name": "Keenetic SMS",
   "version": "1.0.0",
-  "documentation": "https://github.com/yourusername/keenetic_sms",
+  "documentation": "https://github.com/LeoI5/home-assistant-keenetic-sms",
   "requirements": [],
   "dependencies": [],
-  "codeowners": ["@yourusername"]
+  "codeowners": ["@LeoI5"]
 }
