@@ -1,4 +1,3 @@
-
 # Keenetic SMS Integration for Home Assistant
 
 This custom integration reads and decodes UCS2 SMS messages from a Keenetic LTE router.
@@ -7,12 +6,11 @@ This custom integration reads and decodes UCS2 SMS messages from a Keenetic LTE 
 
 1. Add this repository as a custom repository in HACS (type: integration).
 2. Install "Keenetic SMS".
-3. Add to your configuration.yaml:
+3. Go to Settings → Devices & Services → Add Integration → Keenetic SMS.
+4. Enter URL and scan interval.
 
-```yaml
-keenetic_sms:
-  url: "http://192.168.0.1:81/rci/interface/UsbLte0/tty/send"
-  interval: 300
-```
+## Features
 
-4. Restart Home Assistant.
+- Periodic polling via HTTP
+- Decodes UCS2 messages from AT+CMGL=4
+- Displays result in a single sensor

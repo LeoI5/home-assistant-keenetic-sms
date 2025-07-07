@@ -1,55 +1,54 @@
 
-import asyncio
 import logging
-import aiohttp
-import voluptuous as vol
-from homeassistant.const import CONF_URL
-from homeassistant.helpers import discovery
-from homeassistant.helpers.event import async_track_time_interval
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from datetime import timedelta
+import aiohttp
 
-from .const import DOMAIN, CONF_INTERVAL
+from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
-CONFIG_SCHEMA = vol.Schema({
-    DOMAIN: vol.Schema({
-        vol.Required(CONF_URL): str,
-        vol.Optional(CONF_INTERVAL, default=300): int,
-    })
-}, extra=vol.ALLOW_EXTRA)
-
-async def async_setup(hass, config):
-    conf = config[DOMAIN]
-    url = conf[CONF_URL]
-    interval = conf[CONF_INTERVAL]
-
-    coordinator = KeeneticSMSCoordinator(hass, url, interval)
-    await coordinator.async_config_entry_first_refresh()
-
-    hass.data[DOMAIN] = coordinator
-
-    hass.async_create_task(discovery.async_load_platform(hass, "sensor", DOMAIN, {}, config))
+async def async_setup(hass: HomeAssistant, config: dict):
     return True
 
-class KeeneticSMSCoordinator(DataUpdateCoordinator):
-    def __init__(self, hass, url, interval):
-        self.url = url
-        super().__init__(
-            hass,
-            _LOGGER,
-            name="Keenetic SMS",
-            update_interval=timedelta(seconds=interval),
-        )
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
+    url = entry.data["url"]
+    interval = entry.data.get("scan_interval", 300)
 
-    async def _async_update_data(self):
+    session = async_get_clientsession(hass)
+
+    async def async_update_data():
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.post(self.url, json={"command": "AT+CMGL=4"}) as resp:
-                    if resp.status != 200:
-                        raise UpdateFailed(f"HTTP {resp.status}")
-                    data = await resp.json()
-                    return data.get("tty-out", [])
-        except Exception as e:
-            raise UpdateFailed(f"Error fetching SMS: {e}")
+            async with session.post(url, json={"command": "AT+CMGL=4"}) as resp:
+                if resp.status != 200:
+                    raise UpdateFailed(f"HTTP error: {resp.status}")
+                data = await resp.json()
+                return data.get("tty-out", [])
+        except Exception as err:
+            raise UpdateFailed(f"Update error: {err}")
+
+    coordinator = DataUpdateCoordinator(
+        hass,
+        _LOGGER,
+        name="Keenetic SMS",
+        update_method=async_update_data,
+        update_interval=timedelta(seconds=interval),
+    )
+
+    await coordinator.async_config_entry_first_refresh()
+
+    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
+
+    hass.async_create_task(
+        hass.config_entries.async_forward_entry_setup(entry, "sensor")
+    )
+
+    return True
+
+async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
+    await hass.config_entries.async_forward_entry_unload(entry, "sensor")
+    hass.data[DOMAIN].pop(entry.entry_id)
+    return True

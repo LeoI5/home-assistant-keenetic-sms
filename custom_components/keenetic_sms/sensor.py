@@ -1,21 +1,22 @@
 
 from homeassistant.helpers.entity import Entity
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .const import DOMAIN
 import re
 
-async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
-    coordinator = hass.data[DOMAIN]
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback):
+    coordinator = hass.data[DOMAIN][entry.entry_id]
     async_add_entities([KeeneticSMSSensor(coordinator)], True)
 
-class KeeneticSMSSensor(Entity):
+class KeeneticSMSSensor(CoordinatorEntity, Entity):
     def __init__(self, coordinator):
-        self.coordinator = coordinator
+        super().__init__(coordinator)
         self._attr_name = "Keenetic SMS"
         self._attr_unique_id = "keenetic_sms_decoded"
         self._attr_icon = "mdi:message-text"
-
-    async def async_update(self):
-        await self.coordinator.async_request_refresh()
 
     @property
     def state(self):
