@@ -1,0 +1,13 @@
+
+{
+  "component": {
+    "name": "Keenetic SMS",
+    "config": {
+      "step": {
+        "user": {
+          "title": "Configure Keenetic SMS"
+        }
+      }
+    }
+  }
+}

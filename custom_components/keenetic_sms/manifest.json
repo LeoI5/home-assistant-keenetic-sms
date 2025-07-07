@@ -1,0 +1,10 @@
+
+{
+  "domain": "keenetic_sms",
+  "name": "Keenetic SMS",
+  "version": "1.0.0",
+  "documentation": "https://github.com/yourusername/keenetic_sms",
+  "requirements": [],
+  "dependencies": [],
+  "codeowners": ["@yourusername"]
+}
