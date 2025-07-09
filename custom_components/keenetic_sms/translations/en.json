@@ -1,12 +1,8 @@
-
 {
-  "component": {
-    "name": "Keenetic SMS",
-    "config": {
-      "step": {
-        "user": {
-          "title": "Configure Keenetic SMS"
-        }
+  "config": {
+    "step": {
+      "user": {
+        "title": "Set up Keenetic SMS"
       }
     }
   }
