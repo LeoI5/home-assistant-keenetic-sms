@@ -1,8 +1,10 @@
-
 {
   "name": "Keenetic SMS",
-  "content_in_root": false,
-  "domains": ["integration"],
+  "domain": "keenetic_sms",
+  "country": "ru",
   "homeassistant": "2023.0.0",
-  "render_readme": true
+  "codeowners": ["@LeoI5"],
+  "version": "1.0.0",
+  "documentation": "https://github.com/LeoI5/home-assistant-keenetic-sms",
+  "type": "integration"
 }
