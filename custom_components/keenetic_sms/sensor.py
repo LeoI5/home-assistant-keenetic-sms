@@ -1,38 +1,38 @@
+from homeassistant.components.sensor import SensorEntity
+from homeassistant.const import STATE_UNKNOWN
 
-from homeassistant.helpers.entity import Entity
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from .const import DOMAIN
-import re
+DOMAIN = "keenetic_sms"
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback):
+async def async_setup_entry(hass, entry, async_add_entities):
     coordinator = hass.data[DOMAIN][entry.entry_id]
-    async_add_entities([KeeneticSMSSensor(coordinator)], True)
+    async_add_entities([KeeneticSMSSensor(coordinator)])
 
-class KeeneticSMSSensor(CoordinatorEntity, Entity):
+class KeeneticSMSSensor(SensorEntity):
     def __init__(self, coordinator):
-        super().__init__(coordinator)
-        self._attr_name = "Keenetic SMS"
-        self._attr_unique_id = "keenetic_sms_decoded"
-        self._attr_icon = "mdi:message-text"
+        self.coordinator = coordinator
+        self._attr_name = "Keenetic Last SMS"
+        self._attr_unique_id = "keenetic_last_sms"
 
     @property
     def state(self):
-        return self._parse_sms(self.coordinator.data)
+        messages = self.coordinator.data or []
+        if messages:
+            return messages[-1]["content"]
+        return STATE_UNKNOWN
 
-    def _parse_sms(self, lines):
-        def decode_ucs2(pdu):
-            try:
-                match = re.search(r'([0-9A-Fa-f]{40,})$', pdu)
-                if not match:
-                    return ""
-                hex_part = match.group(1)
-                return bytes.fromhex(hex_part).decode('utf-16-be')
-            except Exception:
-                return "[decode error]"
+    @property
+    def extra_state_attributes(self):
+        messages = self.coordinator.data or []
+        if messages:
+            last = messages[-1]
+            return {
+                "from": last["sender"],
+                "date": last["date"],
+                "message_count": len(messages),
+            }
+        return {
+            "message_count": 0
+        }
 
-        pdu_lines = [lines[i + 1] for i in range(len(lines) - 1) if lines[i].startswith("+CMGL:")]
-        decoded = [decode_ucs2(pdu) for pdu in pdu_lines]
-        return "\n\n".join(decoded)
+    async def async_update(self):
+        await self.coordinator.async_request_refresh()
