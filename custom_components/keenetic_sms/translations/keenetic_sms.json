@@ -1,0 +1,10 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Keenetic SMS Setup",
+        "description": "Set up your Keenetic SMS integration"
+      }
+    }
+  }
+}
