@@ -46,6 +46,8 @@ class KeeneticSMSDataUpdateCoordinator(DataUpdateCoordinator):
                     lines = json_data.get("tty-out", [])
                     messages = self._parse_sms(lines)
 
+            # Сортировка от самого старого к новому
+            messages = sorted(messages, key=lambda x: x["date"])
             return messages
 
         except Exception as err:
