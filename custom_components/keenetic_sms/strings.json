@@ -1,0 +1,19 @@
+{
+  "title": "Keenetic SMS",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Keenetic SMS Setup",
+        "description": "Set up your Keenetic SMS router access",
+        "data": {
+          "host": "Router address (URL)",
+          "interval": "Polling interval (seconds)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to Keenetic",
+      "invalid_auth": "Invalid authentication"
+    }
+  }
+}
