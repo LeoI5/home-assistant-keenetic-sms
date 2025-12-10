@@ -19,11 +19,22 @@ class KeeneticSMSDataUpdateCoordinator(DataUpdateCoordinator):
 
     async def _async_update_data(self):
         try:
+            # старые данные координатора
+            old_messages = self.data or []
+            
             resp = await self.session.post(self._url, json={"command": "AT+CMGL=4"})
             resp.raise_for_status()
             json_data = await resp.json()
             lines = json_data.get("tty-out", [])
-            messages = self._parse_sms(lines)
+
+            new_messages = self._parse_sms(lines)
+        
+            # Если модем не вернул НИЧЕГО → не трогаем старое
+            if not new_messages:
+                _LOGGER.warning("Modem returned empty SMS list. Keeping old messages intact.")
+                return old_messages
+        
+            messages = new_messages
 
             if len(messages) >= 4:
                 oldest = min(messages, key=lambda x: x["date"])
